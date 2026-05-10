@@ -3,201 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Học Tiếng Anh Mỗi Ngày</title>
+    <title>The Secret Grid - 500 Words</title>
     <style>
-        :root { --primary: #2563eb; --bg: #f8fafc; --text: #1e293b; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; padding: 20px; max-width: 900px; margin: auto; background: var(--bg); color: var(--text); }
-        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        h1 { color: var(--primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-        .vocab-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f1f5f9; padding: 15px; border-radius: 10px; }
-        .vocab-item { background: white; padding: 8px 12px; border-radius: 6px; border-left: 4px solid var(--primary); shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        audio { width: 100%; margin: 20px 0; border-radius: 8px; }
-        .quiz-section { background: #eff6ff; padding: 20px; border-radius: 10px; margin-top: 20px; border: 1px solid #dbeafe; }
-        .nav-buttons { margin-top: 30px; display: flex; justify-content: space-between; gap: 10px; }
-        button { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; flex: 1; }
-        button:hover { background: #1d4ed8; transform: translateY(-2px); }
-        button.secondary { background: #64748b; }
-        .progress { text-align: center; margin-bottom: 10px; font-size: 0.9em; color: #64748b; }
+        :root {
+            --bg-color: #0f172a;
+            --box-size: 40px;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Container chính chứa 500 ô vuông */
+        #grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(var(--box-size), 1fr));
+            gap: 4px;
+            width: 95vw;
+            max-width: 1200px;
+            padding: 20px;
+        }
+
+        /* Phong cách ô vuông */
+        .box {
+            width: var(--box-size);
+            height: var(--box-size);
+            background-color: #1e293b;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .box:hover {
+            transform: scale(1.2);
+            z-index: 10;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            border-color: #00f2fe;
+        }
+
+        /* Hiệu ứng khi đã nhấn vào */
+        .box.active {
+            background: linear-gradient(45deg, #00f2fe 0%, #4facfe 100%);
+            width: auto;
+            min-width: var(--box-size);
+            padding: 0 10px;
+            z-index: 5;
+        }
+
+        .word-text {
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            opacity: 0;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .box.active .word-text {
+            opacity: 1;
+            font-size: 12px;
+        }
+
+        /* Hiệu ứng huyền ảo cho toàn trang */
+        #background-glow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle, rgba(79, 172, 254, 0.1) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="progress" id="progress">Bài 1 / 10</div>
-    <div id="lesson-content">
-        <h1>Đang tải bài học...</h1>
-    </div>
+    <div id="background-glow"></div>
+    <div id="grid-container"></div>
 
-    <div class="nav-buttons">
-        <button class="secondary" onclick="changeLesson(-1)">← Bài trước</button>
-        <button onclick="changeLesson(1)">Bài tiếp theo →</button>
-    </div>
-</div>
+    <script>
+        const container = document.getElementById('grid-container');
+        
+        // Danh sách từ vựng mẫu (Bạn có thể thay đổi hoặc mở rộng)
+        const vocabulary = [
+            "Serendipity", "Ephemeral", "Luminous", "Resilient", "Eloquent", 
+            "Melancholy", "Quintessential", "Vibrant", "Enigma", "Pristine",
+            "Effervescent", "Ineffable", "Solitude", "Aurora", "Petrichor"
+        ];
 
-<script>
-    const lessons = [
-        {
-            title: "1. Daily Routine & Lifestyle",
-            content: [
-                "Early bird: Người hay dậy sớm", "Night owl: Cú đêm", "Hit the gym: Đi tập gym", 
-                "Grab a coffee: Đi uống cà phê", "Commute to work: Đi làm", "Do the laundry: Giặt giũ",
-                "Order takeout: Đặt đồ ăn mang về", "Wind down: Thư giãn", "Errand: Việc vặt", "Catch up on sleep: Ngủ bù"
-            ],
-            audio: "", // Dán link audio vào đây
-            quiz: "Từ nào nghĩa là 'Ngủ bù'?",
-            options: ["Catch up on sleep", "Wind down", "Errand"],
-            answer: "Catch up on sleep"
-        },
-        {
-            title: "2. Workplace & Career",
-            content: [
-                "Deadline: Hạn chót", "Workload: Khối lượng công việc", "Brainstorm: Động não", 
-                "Collaboration: Sự cộng tác", "Climb the corporate ladder: Thăng tiến", "Overtime: Làm thêm giờ",
-                "Salary expectation: Lương mong muốn", "Burnout: Kiệt sức", "Multitasking: Đa nhiệm", "Incentive: Sự khích lệ"
-            ],
-            audio: "",
-            quiz: "Làm thêm giờ viết tắt là gì?",
-            options: ["OC", "OT", "ON"],
-            answer: "OT"
-        },
-        {
-            title: "3. Socializing & Relationship",
-            content: [
-                "Get along with: Hòa hợp", "Keep in touch: Giữ liên lạc", "Lose touch: Mất liên lạc",
-                "Bond with: Kết nối", "Introvert/Extrovert: Hướng nội/ngoại", "Small talk: Chuyện phiếm",
-                "Social butterfly: Người năng nổ", "Make a good impression: Tạo ấn tượng tốt", "Hang out: Đi chơi", "Mutual friend: Bạn chung"
-            ],
-            audio: "",
-            quiz: "Từ nào chỉ 'Người hướng nội'?",
-            options: ["Social butterfly", "Introvert", "Extrovert"],
-            answer: "Introvert"
-        },
-        {
-            title: "4. Emotions & Feelings",
-            content: [
-                "Overjoyed: Hạnh phúc", "Down in the dumps: Buồn bã", "Anxious: Lo lắng", "Frustrated: Bực bội",
-                "Content: Hài lòng", "Indifferent: Thờ ơ", "Nervous: Hồi hộp", "Optimistic: Lạc quan",
-                "Relieved: Nhẹ nhõm", "Stressed out: Căng thẳng"
-            ],
-            audio: "",
-            quiz: "'Down in the dumps' nghĩa là gì?",
-            options: ["Rất vui", "Rất buồn", "Rất bận"],
-            answer: "Rất buồn"
-        },
-        {
-            title: "5. Travel & Leisure",
-            content: [
-                "Itinerary: Lịch trình", "Breathtaking view: Cảnh đẹp nghẹt thở", "Off the beaten track: Nơi hẻo lánh",
-                "Tourist attraction: Điểm du lịch", "Pack light: Đồ gọn nhẹ", "Local cuisine: Ẩm thực địa phương",
-                "Souvenir: Quà lưu niệm", "Book in advance: Đặt trước", "Wanderlust: Đam mê du lịch", "Jet lag: Mệt mỏi sau bay"
-            ],
-            audio: "",
-            quiz: "Bạn muốn đi du lịch nơi ít người biết, đó là...?",
-            options: ["Tourist attraction", "Off the beaten track", "Local cuisine"],
-            answer: "Off the beaten track"
-        },
-        {
-            title: "6. Technology & Social Media",
-            content: [
-                "Browsing the web: Lướt web", "Scrolling through newsfeed: Lướt bảng tin", "Viral: Lan truyền",
-                "User-friendly: Dễ sử dụng", "High-tech: Công nghệ cao", "Gadget: Thiết bị điện tử",
-                "Cyberbullying: Bắt nạt qua mạng", "Privacy settings: Quyền riêng tư", "Log in/out: Đăng nhập/xuất", "Battery life: Pin"
-            ],
-            audio: "",
-            quiz: "'Dễ sử dụng' trong công nghệ gọi là?",
-            options: ["User-friendly", "High-tech", "Viral"],
-            answer: "User-friendly"
-        },
-        {
-            title: "7. Food & Dining",
-            content: [
-                "Exquisite: Tinh tế", "Bland: Nhạt nhẽo", "Spicy: Cay", "Savory: Đậm đà", "Street food: Đồ ăn vỉa hè",
-                "Fine dining: Ăn sang trọng", "Leftovers: Đồ ăn thừa", "Digest: Tiêu hóa", "Beverage: Đồ uống", "Appetizer: Khai vị"
-            ],
-            audio: "",
-            quiz: "Đồ ăn thừa sau bữa ăn gọi là?",
-            options: ["Appetizer", "Leftovers", "Bland"],
-            answer: "Leftovers"
-        },
-        {
-            title: "8. Health & Fitness",
-            content: [
-                "Immune system: Hệ miễn dịch", "Balanced diet: Chế độ ăn cân bằng", "Stay in shape: Giữ dáng",
-                "Sedentary lifestyle: Ít vận động", "Wholesome: Lành mạnh", "Physical health: Thể chất",
-                "Mental health: Tinh thần", "Check-up: Khám tổng quát", "Symptoms: Triệu chứng", "Prescription: Đơn thuốc"
-            ],
-            audio: "",
-            quiz: "'Lối sống ít vận động' là gì?",
-            options: ["Stay in shape", "Sedentary lifestyle", "Balanced diet"],
-            answer: "Sedentary lifestyle"
-        },
-        {
-            title: "9. Shopping & Finance",
-            content: [
-                "Affordable: Giá phải chăng", "Overpriced: Quá đắt", "Bargain: Món hời/mặc cả",
-                "Window shopping: Ngắm đồ", "Budget-conscious: Tiết kiệm", "Impulse buying: Mua ngẫu hứng",
-                "Refund: Hoàn tiền", "Receipt: Hóa đơn", "Discount: Giảm giá", "Brand loyalty: Trung thành thương hiệu"
-            ],
-            audio: "",
-            quiz: "Việc đi ngắm đồ mà không mua gọi là?",
-            options: ["Impulse buying", "Window shopping", "Bargain"],
-            answer: "Window shopping"
-        },
-        {
-            title: "10. Education & Learning",
-            content: [
-                "Major in: Chuyên ngành", "Curriculum: Chương trình học", "Hand in an assignment: Nộp bài",
-                "Self-study: Tự học", "Lifelong learning: Học suốt đời", "Academic performance: Kết quả học",
-                "Tuition fee: Học phí", "Scholarship: Học bổng", "Workshop: Hội thảo", "Knowledge-intensive: Nhiều kiến thức"
-            ],
-            audio: "",
-            quiz: "Học bổng trong tiếng Anh là gì?",
-            options: ["Tuition fee", "Scholarship", "Assignment"],
-            answer: "Scholarship"
+        // Tạo 500 ô vuông
+        for (let i = 1; i <= 500; i++) {
+            const box = document.createElement('div');
+            box.className = 'box';
+            
+            // Tạo màu sắc ngẫu nhiên nhẹ cho mỗi ô để trông "kì lạ"
+            const hue = Math.floor(Math.random() * 360);
+            box.style.borderBottom = `2px solid hsla(${hue}, 70%, 50%, 0.3)`;
+
+            const wordSpan = document.createElement('span');
+            wordSpan.className = 'word-text';
+            
+            // Lấy ngẫu nhiên từ trong danh sách
+            const randomWord = vocabulary[Math.floor(Math.random() * vocabulary.length)];
+            wordSpan.innerText = `${randomWord}`;
+
+            box.appendChild(wordSpan);
+
+            // Sự kiện khi click
+            box.addEventListener('click', function() {
+                this.classList.toggle('active');
+                
+                // Hiệu ứng rung nhẹ khi chọn
+                if(this.classList.contains('active')) {
+                    this.style.transform = "scale(1.5)";
+                    setTimeout(() => {
+                        this.style.transform = "scale(1.2)";
+                    }, 200);
+                }
+            });
+
+            container.appendChild(box);
         }
-    ];
-
-    let currentIdx = 0;
-
-    function displayLesson(index) {
-        const lesson = lessons[index];
-        document.getElementById('progress').innerText = `Bài ${index + 1} / ${lessons.length}`;
-        
-        let vocabHtml = lesson.content.map(item => `<div class="vocab-item">${item}</div>`).join('');
-        
-        let optionsHtml = lesson.options.map(opt => 
-            `<button class="secondary" style="margin:5px; flex:none; width:auto;" onclick="checkAnswer('${opt}', '${lesson.answer}')">${opt}</button>`
-        ).join('');
-
-        const html = `
-            <h1>${lesson.title}</h1>
-            <div class="vocab-list">${vocabHtml}</div>
-            <p><strong>Luyện nghe:</strong></p>
-            <audio controls src="${lesson.audio || 'https://www.w3schools.com/html/horse.ogg'}"></audio>
-            <div class="quiz-section">
-                <h3>Câu hỏi ôn tập:</h3>
-                <p>${lesson.quiz}</p>
-                <div style="display:flex; flex-wrap:wrap;">${optionsHtml}</div>
-            </div>
-        `;
-        document.getElementById('lesson-content').innerHTML = html;
-        window.scrollTo(0,0);
-    }
-
-    function checkAnswer(selected, correct) {
-        if(selected === correct) alert("Chính xác! Cố gắng phát huy nhé.");
-        else alert("Chưa đúng rồi, thử lại xem sao!");
-    }
-
-    function changeLesson(step) {
-        currentIdx += step;
-        if (currentIdx < 0) currentIdx = 0;
-        if (currentIdx >= lessons.length) currentIdx = lessons.length - 1;
-        displayLesson(currentIdx);
-    }
-
-    displayLesson(currentIdx);
-</script>
-
+    </script>
 </body>
 </html>
